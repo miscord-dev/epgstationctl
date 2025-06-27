@@ -35,7 +35,7 @@ func (c *EPGStationClient) GetChannels() (*epgstation.ChannelItems, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, handleErrorResponse(resp)
@@ -54,7 +54,7 @@ func (c *EPGStationClient) GetSchedules(params *epgstation.GetSchedulesParams) (
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, handleErrorResponse(resp)
@@ -73,7 +73,7 @@ func (c *EPGStationClient) GetBroadcastingPrograms(params *epgstation.GetSchedul
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, handleErrorResponse(resp)
@@ -92,7 +92,7 @@ func (c *EPGStationClient) GetRecordings(params *epgstation.GetRecordingParams) 
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, handleErrorResponse(resp)
@@ -111,7 +111,7 @@ func (c *EPGStationClient) GetSchedulesChannelId(ctx interface{}, channelId epgs
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, handleErrorResponse(resp)
@@ -130,7 +130,7 @@ func (c *EPGStationClient) PostSchedulesSearch(ctx interface{}, body epgstation.
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, handleErrorResponse(resp)

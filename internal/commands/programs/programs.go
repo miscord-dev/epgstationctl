@@ -11,12 +11,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	outputFormatJSON = "json"
+)
+
 var (
 	channelID int
 	date      string
 	days      int
 	halfWidth bool
-	keyword   string
 	limit     int
 )
 
@@ -56,7 +59,7 @@ var listCmd = &cobra.Command{
 
 		// Add channel filter if provided
 		if channelID > 0 {
-			chID := epgstation.ChannelId(channelID)
+			chID := channelID
 			// Get specific channel schedule
 			channelParams := &epgstation.GetSchedulesChannelIdParams{
 				IsHalfWidth: halfWidth,
@@ -65,7 +68,7 @@ var listCmd = &cobra.Command{
 				channelParams.StartAt = params.StartAt
 			}
 			if days > 0 {
-				channelParams.Days = epgstation.Days(days)
+				channelParams.Days = days
 			}
 
 			schedules, err := client.GetSchedulesChannelId(nil, chID, channelParams)
@@ -75,7 +78,7 @@ var listCmd = &cobra.Command{
 
 			var formatter output.Formatter
 			switch cfg.Output.Format {
-			case "json":
+			case outputFormatJSON:
 				formatter = output.NewJSONFormatter(nil)
 				return formatter.Format(*schedules)
 			default:
@@ -92,7 +95,7 @@ var listCmd = &cobra.Command{
 
 		var formatter output.Formatter
 		switch cfg.Output.Format {
-		case "json":
+		case outputFormatJSON:
 			formatter = output.NewJSONFormatter(nil)
 			return formatter.Format(*schedules)
 		default:
@@ -125,7 +128,7 @@ var currentCmd = &cobra.Command{
 
 		var formatter output.Formatter
 		switch cfg.Output.Format {
-		case "json":
+		case outputFormatJSON:
 			formatter = output.NewJSONFormatter(nil)
 			return formatter.Format(*schedules)
 		default:
@@ -175,7 +178,7 @@ var searchCmd = &cobra.Command{
 
 		var formatter output.Formatter
 		switch cfg.Output.Format {
-		case "json":
+		case outputFormatJSON:
 			formatter = output.NewJSONFormatter(nil)
 		default:
 			formatter = output.NewTableFormatter(nil, cfg.Output.NoHeader)

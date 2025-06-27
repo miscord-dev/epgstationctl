@@ -66,7 +66,7 @@ func (f *TableFormatter) Format(data interface{}) error {
 
 func (f *TableFormatter) formatSlice(v reflect.Value) error {
 	if v.Len() == 0 {
-		fmt.Fprintln(f.writer, "No data found")
+		_, _ = fmt.Fprintln(f.writer, "No data found")
 		return nil
 	}
 
