@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"reflect"
-	
 
 	"github.com/olekukonko/tablewriter"
 )
@@ -67,7 +66,7 @@ func (f *TableFormatter) Format(data interface{}) error {
 
 func (f *TableFormatter) formatSlice(v reflect.Value) error {
 	if v.Len() == 0 {
-		fmt.Fprintln(f.writer, "No data found")
+		_, _ = fmt.Fprintln(f.writer, "No data found")
 		return nil
 	}
 
@@ -202,7 +201,19 @@ func (f *TableFormatter) formatValue(v reflect.Value) string {
 			return ""
 		}
 		return fmt.Sprintf("[%d items]", v.Len())
+	case reflect.Struct:
+		// For nested structs, show a summary instead of full structure
+		typeName := v.Type().Name()
+		if typeName == "" {
+			typeName = "struct"
+		}
+		return fmt.Sprintf("<%s>", typeName)
 	default:
-		return fmt.Sprintf("%v", v.Interface())
+		// Avoid showing memory addresses and internal representations
+		typeName := v.Type().Name()
+		if typeName != "" {
+			return fmt.Sprintf("<%s>", typeName)
+		}
+		return fmt.Sprintf("<%s>", v.Type().String())
 	}
 }

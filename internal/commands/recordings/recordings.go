@@ -38,13 +38,11 @@ var listCmd = &cobra.Command{
 		}
 
 		if offset > 0 {
-			offsetParam := epgstation.Offset(offset)
-			params.Offset = &offsetParam
+			params.Offset = &offset
 		}
 
 		if limit > 0 {
-			limitParam := epgstation.Limit(limit)
-			params.Limit = &limitParam
+			params.Limit = &limit
 		}
 
 		recordings, err := client.GetRecordings(params)
