@@ -77,11 +77,12 @@ var listCmd = &cobra.Command{
 			switch cfg.Output.Format {
 			case "json":
 				formatter = output.NewJSONFormatter(nil)
+				return formatter.Format(*schedules)
 			default:
 				formatter = output.NewTableFormatter(nil, cfg.Output.NoHeader)
+				// Custom formatting for Schedules - flatten to show programs with channel info
+				return formatSchedulesAsTable(*schedules, formatter)
 			}
-
-			return formatter.Format(*schedules)
 		}
 
 		schedules, err := client.GetSchedules(params)
@@ -93,11 +94,12 @@ var listCmd = &cobra.Command{
 		switch cfg.Output.Format {
 		case "json":
 			formatter = output.NewJSONFormatter(nil)
+			return formatter.Format(*schedules)
 		default:
 			formatter = output.NewTableFormatter(nil, cfg.Output.NoHeader)
+			// Custom formatting for Schedules - flatten to show programs with channel info
+			return formatSchedulesAsTable(*schedules, formatter)
 		}
-
-		return formatter.Format(*schedules)
 	},
 }
 
@@ -125,11 +127,12 @@ var currentCmd = &cobra.Command{
 		switch cfg.Output.Format {
 		case "json":
 			formatter = output.NewJSONFormatter(nil)
+			return formatter.Format(*schedules)
 		default:
 			formatter = output.NewTableFormatter(nil, cfg.Output.NoHeader)
+			// Custom formatting for Schedules - flatten to show programs with channel info
+			return formatSchedulesAsTable(*schedules, formatter)
 		}
-
-		return formatter.Format(*schedules)
 	},
 }
 
@@ -200,4 +203,57 @@ func init() {
 	programsCmd.AddCommand(currentCmd)
 	programsCmd.AddCommand(searchCmd)
 	root.AddCommand(programsCmd)
+}
+
+// formatSchedulesAsTable formats schedule data in a user-friendly table format
+func formatSchedulesAsTable(schedules epgstation.Schedules, formatter output.Formatter) error {
+	if len(schedules) == 0 {
+		fmt.Println("No programs found")
+		return nil
+	}
+
+	// Create a flat list of programs with channel information
+	type ProgramWithChannel struct {
+		ChannelName   string
+		ChannelType   string
+		ProgramName   string
+		StartTime     string
+		EndTime       string
+		Description   string
+	}
+
+	var programs []ProgramWithChannel
+	for _, schedule := range schedules {
+		channelName := schedule.Channel.Name
+		
+		for _, program := range schedule.Programs {
+			startTime := formatUnixTime(int64(program.StartAt))
+			endTime := formatUnixTime(int64(program.EndAt))
+			
+			description := ""
+			if program.Description != nil {
+				description = *program.Description
+				if len(description) > 50 {
+					description = description[:50] + "..."
+				}
+			}
+			
+			programs = append(programs, ProgramWithChannel{
+				ChannelName:   channelName,
+				ChannelType:   string(schedule.Channel.ChannelType),
+				ProgramName:   program.Name,
+				StartTime:     startTime,
+				EndTime:       endTime,
+				Description:   description,
+			})
+		}
+	}
+
+	return formatter.Format(programs)
+}
+
+// formatUnixTime converts Unix timestamp (in milliseconds) to readable time
+func formatUnixTime(unixTimeMS int64) string {
+	t := time.Unix(unixTimeMS/1000, 0)
+	return t.Format("15:04")
 }
