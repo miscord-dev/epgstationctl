@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"reflect"
-	
 
 	"github.com/olekukonko/tablewriter"
 )

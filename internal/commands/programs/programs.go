@@ -12,12 +12,12 @@ import (
 )
 
 var (
-	channelID   int
-	date        string
-	days        int
-	halfWidth   bool
-	keyword     string
-	limit       int
+	channelID int
+	date      string
+	days      int
+	halfWidth bool
+	keyword   string
+	limit     int
 )
 
 var programsCmd = &cobra.Command{
@@ -214,22 +214,22 @@ func formatSchedulesAsTable(schedules epgstation.Schedules, formatter output.For
 
 	// Create a flat list of programs with channel information
 	type ProgramWithChannel struct {
-		ChannelName   string
-		ChannelType   string
-		ProgramName   string
-		StartTime     string
-		EndTime       string
-		Description   string
+		ChannelName string
+		ChannelType string
+		ProgramName string
+		StartTime   string
+		EndTime     string
+		Description string
 	}
 
 	var programs []ProgramWithChannel
 	for _, schedule := range schedules {
 		channelName := schedule.Channel.Name
-		
+
 		for _, program := range schedule.Programs {
 			startTime := formatUnixTime(int64(program.StartAt))
 			endTime := formatUnixTime(int64(program.EndAt))
-			
+
 			description := ""
 			if program.Description != nil {
 				description = *program.Description
@@ -237,14 +237,14 @@ func formatSchedulesAsTable(schedules epgstation.Schedules, formatter output.For
 					description = description[:50] + "..."
 				}
 			}
-			
+
 			programs = append(programs, ProgramWithChannel{
-				ChannelName:   channelName,
-				ChannelType:   string(schedule.Channel.ChannelType),
-				ProgramName:   program.Name,
-				StartTime:     startTime,
-				EndTime:       endTime,
-				Description:   description,
+				ChannelName: channelName,
+				ChannelType: string(schedule.Channel.ChannelType),
+				ProgramName: program.Name,
+				StartTime:   startTime,
+				EndTime:     endTime,
+				Description: description,
 			})
 		}
 	}
