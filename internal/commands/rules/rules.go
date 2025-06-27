@@ -215,8 +215,8 @@ var createCmd = &cobra.Command{
 				SKY:         &skyEnabled,
 			},
 			ReserveOption: epgstation.RuleReserveOption{
-				Enable:        true,
-				AllowEndLack:  allowEndLack,
+				Enable:         true,
+				AllowEndLack:   allowEndLack,
 				AvoidDuplicate: avoidDupe,
 			},
 		}
@@ -265,12 +265,10 @@ func formatRulesAsTable(rules client.RulesWithID, formatter output.Formatter) er
 
 	// Create a flat list of rules with essential information
 	type RuleInfo struct {
-		ID          int
-		Name        string
-		Status      string
-		Keyword     string
-		Channels    string
-		UpdateTime  string
+		ID       int
+		Status   string
+		Keyword  string
+		Channels string
 	}
 
 	var ruleList []RuleInfo
@@ -308,18 +306,11 @@ func formatRulesAsTable(rules client.RulesWithID, formatter output.Formatter) er
 			}
 		}
 
-		updateTime := "N/A"
-		if rule.ReservesCnt != nil {
-			updateTime = fmt.Sprintf("%d reserves", *rule.ReservesCnt)
-		}
-
 		ruleList = append(ruleList, RuleInfo{
-			ID:          rule.ID, // Now using actual rule ID
-			Name:        fmt.Sprintf("Rule-%d", rule.ID),
-			Status:      status,
-			Keyword:     keyword,
-			Channels:    channels,
-			UpdateTime:  updateTime,
+			ID:       rule.ID,
+			Status:   status,
+			Keyword:  keyword,
+			Channels: channels,
 		})
 	}
 
@@ -336,7 +327,7 @@ func formatRuleDetailsAsTable(rule client.RuleWithID, formatter output.Formatter
 	var details []RuleDetail
 
 	details = append(details, RuleDetail{"ID", fmt.Sprintf("%d", rule.ID)})
-	
+
 	if rule.ReservesCnt != nil {
 		details = append(details, RuleDetail{"ReserveCount", fmt.Sprintf("%d", *rule.ReservesCnt)})
 	} else {
