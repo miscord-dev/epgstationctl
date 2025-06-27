@@ -1,16 +1,34 @@
 # epgstationctl
 
-A command-line interface for [EPGStation](https://github.com/l3tnun/EPGStation), allowing you to manage channels, programs, recordings, and reservations from the terminal.
+A comprehensive command-line interface for [EPGStation](https://github.com/l3tnun/EPGStation), providing full access to TV channel management, program scheduling, and recording operations from the terminal. Built with type-safe API integration and designed for both interactive use and automation scripts.
 
 ## Features
 
-- **Channel Management**: List and view channel information
-- **Program Guide**: Browse program schedules, current broadcasts, and search programs
-- **Recording Management**: Monitor active recordings and system status
-- **Multiple Output Formats**: Table (default) and JSON output for scripting
-- **Simple Configuration**: All configuration via command-line flags
+- **Complete Channel Management**: List all channels and view detailed channel information
+- **Program Guide Operations**: 
+  - Browse program schedules with date and channel filtering
+  - View currently broadcasting programs
+  - Search programs by keyword across title and description
+- **Recording System Monitoring**: 
+  - List active recordings with pagination support
+  - Monitor recording system status and statistics
+- **Multiple Output Formats**: 
+  - Clean table format for human reading (default)
+  - JSON output for scripting and automation
+  - Configurable table headers
+- **Flexible Configuration**: 
+  - CLI flags for all options
+  - Environment variable support with `EPGSTATIONCTL_` prefix
+  - No configuration files required
+- **Type-Safe API Integration**: Generated client from EPGStation's OpenAPI specification
+- **Production Ready**: Comprehensive error handling and timeout management
 
 ## Installation
+
+### Requirements
+
+- Go 1.21 or later
+- Access to an EPGStation server
 
 ### Building from Source
 
@@ -18,12 +36,21 @@ A command-line interface for [EPGStation](https://github.com/l3tnun/EPGStation),
 git clone https://github.com/miscord-dev/epgstationctl.git
 cd epgstationctl
 go build -o bin/epgstationctl ./cmd/epgstationctl
+
+# Optionally install to GOPATH/bin
+go install ./cmd/epgstationctl
 ```
 
 ### Using Go Install
 
 ```bash
 go install github.com/miscord-dev/epgstationctl/cmd/epgstationctl@latest
+```
+
+### Verify Installation
+
+```bash
+epgstationctl --help
 ```
 
 ## Configuration
@@ -89,23 +116,23 @@ epgstationctl channels list --server=http://192.168.1.100:8888
 #### Programs
 
 ```bash
-# List today's programs
+# List today's programs (all channels)
 epgstationctl programs list
 
 # List programs for specific date
 epgstationctl programs list --date=2024-06-27
 
-# List programs for specific channel
-epgstationctl programs list --channel=123
+# List programs for specific channel and multiple days
+epgstationctl programs list --channel=123 --days=3
 
 # Show currently broadcasting programs
 epgstationctl programs current
 
-# Search programs by keyword
+# Search programs by keyword (searches title and description)
 epgstationctl programs search "ニュース"
 
-# Search with result limit
-epgstationctl programs search "ドラマ" --limit=10
+# Search with result limit and half-width characters
+epgstationctl programs search "ドラマ" --limit=20 --half-width=false
 ```
 
 #### Recordings
@@ -114,11 +141,14 @@ epgstationctl programs search "ドラマ" --limit=10
 # List current recordings
 epgstationctl recordings list
 
-# Show recording system status
+# Show recording system status and statistics
 epgstationctl recordings status
 
-# List with pagination
-epgstationctl recordings list --offset=10 --limit=20
+# List with pagination and custom limit
+epgstationctl recordings list --offset=0 --limit=50
+
+# Monitor recordings with verbose output
+epgstationctl recordings list --verbose --half-width=true
 ```
 
 ### Advanced Usage Examples
@@ -178,11 +208,13 @@ fi
 
 ## API Compatibility
 
-This tool is built using EPGStation's OpenAPI specification and supports:
+This tool is built using EPGStation's OpenAPI specification and provides:
 
-- EPGStation v2.4.2 and later
-- All documented API endpoints for channels, schedules, and recordings
-- Proper error handling and HTTP status codes
+- **Full API Coverage**: Channels, schedules, recordings, and program search
+- **Type Safety**: Generated client ensures API compatibility 
+- **Version Support**: EPGStation v2.4.2 and later
+- **Error Handling**: Proper HTTP status codes and user-friendly error messages
+- **Network Resilience**: Configurable timeouts and connection handling
 
 ## Development
 
