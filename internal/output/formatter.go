@@ -187,16 +187,6 @@ func (f *TableFormatter) formatValue(v reflect.Value) string {
 	case reflect.String:
 		return v.String()
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		// Check if this might be a Unix timestamp
-		if v.Int() > 1000000000 && v.Int() < 10000000000 {
-			// Looks like a Unix timestamp in seconds
-			t := time.Unix(v.Int(), 0)
-			return t.Format("2006-01-02 15:04:05")
-		} else if v.Int() > 1000000000000 {
-			// Looks like a Unix timestamp in milliseconds
-			t := time.Unix(v.Int()/1000, (v.Int()%1000)*1000000)
-			return t.Format("2006-01-02 15:04:05")
-		}
 		return fmt.Sprintf("%d", v.Int())
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		return fmt.Sprintf("%d", v.Uint())
