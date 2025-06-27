@@ -6,9 +6,14 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"time"
 
 	"github.com/olekukonko/tablewriter"
 )
+
+func FormatUnixTime(unix int) string {
+	return time.Unix(int64(unix)/1000, 0).Format("2006-01-02 15:04:05")
+}
 
 type Formatter interface {
 	Format(data interface{}) error
@@ -35,6 +40,23 @@ func NewTableFormatter(writer io.Writer, noHeader bool) *TableFormatter {
 		writer = os.Stdout
 	}
 	return &TableFormatter{writer: writer, noHeader: noHeader}
+}
+
+func PrintAsJSON(data interface{}) error {
+	encoder := json.NewEncoder(os.Stdout)
+	encoder.SetIndent("", "  ")
+	return encoder.Encode(data)
+}
+
+func NewTable() *tablewriter.Table {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorder(false)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	return table
 }
 
 func (f *JSONFormatter) Format(data interface{}) error {

@@ -297,3 +297,143 @@ func (c *EPGStationClient) SearchRulesKeyword(params *epgstation.GetRulesKeyword
 
 	return &keywords, nil
 }
+
+// GetReserves retrieves current reserves with optional filtering
+func (c *EPGStationClient) GetReserves(params *epgstation.GetReservesParams) (*epgstation.Reserves, error) {
+	resp, err := c.client.GetReserves(context.Background(), params)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, handleErrorResponse(resp)
+	}
+
+	var reserves epgstation.Reserves
+	if err := parseJSONResponse(resp, &reserves); err != nil {
+		return nil, err
+	}
+
+	return &reserves, nil
+}
+
+// CreateReserve creates a manual reserve
+func (c *EPGStationClient) CreateReserve(body epgstation.ManualReserveOption) (*epgstation.AddedReserve, error) {
+	resp, err := c.client.PostReserves(context.Background(), body)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusCreated {
+		return nil, handleErrorResponse(resp)
+	}
+
+	var result epgstation.AddedReserve
+	if err := parseJSONResponse(resp, &result); err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+// UpdateReserve updates an existing reserve
+func (c *EPGStationClient) UpdateReserve(reserveID int, body epgstation.EditManualReserveOption) error {
+	resp, err := c.client.PutReservesReserveId(context.Background(), reserveID, body)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return handleErrorResponse(resp)
+	}
+
+	return nil
+}
+
+// DeleteReserve deletes a reserve
+func (c *EPGStationClient) DeleteReserve(reserveID int) error {
+	resp, err := c.client.DeleteReservesReserveId(context.Background(), reserveID)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return handleErrorResponse(resp)
+	}
+
+	return nil
+}
+
+// UnSkipReserve removes skip status from a reserve
+func (c *EPGStationClient) UnSkipReserve(reserveID int) error {
+	resp, err := c.client.DeleteReservesReserveIdSkip(context.Background(), reserveID)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return handleErrorResponse(resp)
+	}
+
+	return nil
+}
+
+// GetEncodes retrieves encode jobs with optional filtering
+func (c *EPGStationClient) GetEncodes(params *epgstation.GetEncodeParams) (*epgstation.EncodeInfo, error) {
+	resp, err := c.client.GetEncode(context.Background(), params)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, handleErrorResponse(resp)
+	}
+
+	var encodes epgstation.EncodeInfo
+	if err := parseJSONResponse(resp, &encodes); err != nil {
+		return nil, err
+	}
+
+	return &encodes, nil
+}
+
+// CreateEncode creates a manual encode job
+func (c *EPGStationClient) CreateEncode(body epgstation.AddManualEncodeProgramOption) (*epgstation.AddedEncode, error) {
+	resp, err := c.client.PostEncode(context.Background(), body)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusCreated {
+		return nil, handleErrorResponse(resp)
+	}
+
+	var result epgstation.AddedEncode
+	if err := parseJSONResponse(resp, &result); err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+// DeleteEncode deletes/cancels an encode job
+func (c *EPGStationClient) DeleteEncode(encodeID int) error {
+	resp, err := c.client.DeleteEncodeEncodeId(context.Background(), encodeID)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return handleErrorResponse(resp)
+	}
+
+	return nil
+}
