@@ -275,9 +275,13 @@ func formatRulesAsTable(rules client.RulesWithID, formatter output.Formatter) er
 
 	var ruleList []RuleInfo
 	for _, rule := range rules.Rules {
-		status := "Enabled"
-		if rule.IsTimeSpecification {
-			status = "Time-based"
+		status := "Disabled"
+		if rule.ReserveOption.Enable {
+			if rule.IsTimeSpecification {
+				status = "Time-based"
+			} else {
+				status = "Enabled"
+			}
 		}
 
 		keyword := ""
