@@ -1,0 +1,7 @@
+# Configuration for oapi-codegen v2
+package: epgstation
+generate:
+  client: true
+  models: true
+  embedded-spec: true
+output: ../internal/epgstation/epgstation_client.go

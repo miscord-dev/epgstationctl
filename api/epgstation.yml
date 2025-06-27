@@ -1,0 +1,360 @@
+openapi: 3.0.1
+info:
+  title: EPGStation API
+  version: 1.0.0
+  description: EPGStation API for CLI access
+  license:
+    name: MIT
+    url: https://github.com/l3tnun/EPGStation/blob/master/LICENSE
+
+servers:
+  - url: http://localhost:8888/api
+    description: Local EPGStation server
+
+paths:
+  /channels:
+    get:
+      summary: Get all channels
+      operationId: getChannels
+      responses:
+        '200':
+          description: List of channels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Channel'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /channels/{channelId}:
+    get:
+      summary: Get channel by ID
+      operationId: getChannel
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/ChannelId'
+      responses:
+        '200':
+          description: Channel details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Channel'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /schedules:
+    get:
+      summary: Get program schedules
+      operationId: getSchedules
+      parameters:
+        - name: channelId
+          in: query
+          schema:
+            $ref: '#/components/schemas/ChannelId'
+        - name: startAt
+          in: query
+          schema:
+            $ref: '#/components/schemas/UnixtimeMS'
+        - name: endAt
+          in: query
+          schema:
+            $ref: '#/components/schemas/UnixtimeMS'
+        - name: days
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 8
+            default: 1
+      responses:
+        '200':
+          description: Program schedules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schedule'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /schedules/broadcasting:
+    get:
+      summary: Get currently broadcasting programs
+      operationId: getBroadcastingPrograms
+      parameters:
+        - name: time
+          in: query
+          schema:
+            $ref: '#/components/schemas/UnixtimeMS'
+      responses:
+        '200':
+          description: Currently broadcasting programs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Program'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /recording:
+    get:
+      summary: Get current recordings
+      operationId: getRecordings
+      parameters:
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 24
+      responses:
+        '200':
+          description: Current recordings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  records:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Recording'
+                  total:
+                    type: integer
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    UnixtimeMS:
+      description: Time in milliseconds
+      type: integer
+      format: int64
+
+    ChannelId:
+      description: Channel ID
+      type: integer
+      maximum: 6553565535
+
+    ServiceId:
+      description: Service ID
+      type: integer
+      maximum: 6553565535
+
+    NetworkId:
+      description: Network ID
+      type: integer
+      maximum: 6553565535
+
+    ProgramId:
+      description: Program ID
+      type: integer
+      maximum: 655356553565535
+
+    EventId:
+      description: Event ID
+      type: integer
+      maximum: 655356553565535
+
+    Channel:
+      type: object
+      required:
+        - id
+        - name
+        - type
+      properties:
+        id:
+          $ref: '#/components/schemas/ChannelId'
+        serviceId:
+          $ref: '#/components/schemas/ServiceId'
+        networkId:
+          $ref: '#/components/schemas/NetworkId'
+        name:
+          description: Channel name
+          type: string
+        halfWidthName:
+          description: Half-width channel name
+          type: string
+        remoteControlKeyId:
+          description: Remote control key ID
+          type: integer
+        hasLogoData:
+          description: Whether channel has logo data
+          type: boolean
+        channelType:
+          description: Channel type
+          type: string
+          enum: [GR, BS, CS, SKY]
+        type:
+          description: Channel type
+          type: string
+
+    Program:
+      type: object
+      required:
+        - id
+        - channelId
+        - eventId
+        - startAt
+        - endAt
+        - name
+      properties:
+        id:
+          $ref: '#/components/schemas/ProgramId'
+        channelId:
+          $ref: '#/components/schemas/ChannelId'
+        eventId:
+          $ref: '#/components/schemas/EventId'
+        serviceId:
+          $ref: '#/components/schemas/ServiceId'
+        networkId:
+          $ref: '#/components/schemas/NetworkId'
+        startAt:
+          $ref: '#/components/schemas/UnixtimeMS'
+        endAt:
+          $ref: '#/components/schemas/UnixtimeMS'
+        name:
+          description: Program name
+          type: string
+        halfWidthName:
+          description: Half-width program name
+          type: string
+        description:
+          description: Program description
+          type: string
+        halfWidthDescription:
+          description: Half-width program description
+          type: string
+        extended:
+          description: Extended program information
+          type: string
+        halfWidthExtended:
+          description: Half-width extended program information
+          type: string
+        genre1:
+          description: Primary genre
+          type: integer
+        genre2:
+          description: Secondary genre
+          type: integer
+        genre3:
+          description: Tertiary genre
+          type: integer
+        genre4:
+          description: Quaternary genre
+          type: integer
+        genre5:
+          description: Quinary genre
+          type: integer
+        genre6:
+          description: Senary genre
+          type: integer
+        videoType:
+          description: Video type
+          type: string
+        videoResolution:
+          description: Video resolution
+          type: string
+        videoStreamContent:
+          description: Video stream content
+          type: integer
+        videoComponentType:
+          description: Video component type
+          type: integer
+        audioSamplingRate:
+          description: Audio sampling rate
+          type: integer
+        audioComponentType:
+          description: Audio component type
+          type: integer
+        isFree:
+          description: Whether program is free
+          type: boolean
+
+    Schedule:
+      type: object
+      required:
+        - channel
+        - programs
+      properties:
+        channel:
+          $ref: '#/components/schemas/Channel'
+        programs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Program'
+
+    Recording:
+      type: object
+      required:
+        - id
+        - programId
+        - channelId
+        - startAt
+        - endAt
+        - name
+      properties:
+        id:
+          description: Recording ID
+          type: integer
+        programId:
+          $ref: '#/components/schemas/ProgramId'
+        channelId:
+          $ref: '#/components/schemas/ChannelId'
+        startAt:
+          $ref: '#/components/schemas/UnixtimeMS'
+        endAt:
+          $ref: '#/components/schemas/UnixtimeMS'
+        name:
+          description: Recording name
+          type: string
+        description:
+          description: Recording description
+          type: string
+        extended:
+          description: Extended recording information
+          type: string
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

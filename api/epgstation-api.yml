@@ -1,0 +1,1880 @@
+openapi: 3.0.1
+info:
+    version: '~'
+    title: '~'
+    license:
+        name: MIT
+        url: https://github.com/l3tnun/EPGStation/blob/master/LICENSE
+
+servers: []
+
+paths: {}
+
+components:
+    schemas:
+        UnixtimeMS:
+            description: 時刻 (ms)
+            type: integer
+
+        ChannelId:
+            description: 放送局 id
+            type: integer
+            maximum: 6553565535
+
+        ServiceId:
+            description: service id
+            type: integer
+            maximum: 6553565535
+
+        NetworkId:
+            description: network id
+            type: integer
+            maximum: 6553565535
+
+        ProgramId:
+            description: program id
+            type: integer
+            maximum: 655356553565535
+
+        EventId:
+            description: event id
+            type: integer
+            maximum: 655356553565535
+
+        RuleId:
+            description: ルール id
+            type: integer
+
+        ReserveId:
+            description: 予約 id
+            type: integer
+
+        RecordedId:
+            description: 録画済み番組 id
+            type: integer
+
+        RecordedHistoryId:
+            description: 録画済み番組履歴管理 id
+            type: integer
+
+        VideoFileId:
+            description: ビデオファイル id
+            type: integer
+
+        VideoFileType:
+            description: ビデオファイル形式
+            type: string
+            enum:
+                - 'ts'
+                - 'encoded'
+
+        ThumbnailId:
+            description: サムネイル id
+            type: integer
+
+        DropLogFileId:
+            description: ドロップログファイル id
+            type: integer
+
+        RecordedTagId:
+            description: 録画 tag id
+            type: integer
+
+        EncodeId:
+            description: エンコード id
+            type: integer
+
+        ChannelType:
+            description: 放送波タイプ
+            type: string
+            enum:
+                - GR
+                - BS
+                - CS
+                - SKY
+
+        ProgramGenreLv1:
+            description: ジャンル
+            type: integer
+
+        ProgramGenreLv2:
+            description: サブジャンル
+            type: integer
+
+        ProgramVideoType:
+            description: 番組ビデオコーデック
+            type: string
+            enum:
+                - mpeg2
+                - h.264
+                - h.265
+
+        ProgramVideoResolution:
+            description: 番組ビデオ解像度
+            type: string
+            enum:
+                - 240p
+                - 480i
+                - 480p
+                - 720p
+                - 1080i
+                - 1080p
+                - 2160p
+                - 4320p
+
+        ProgramAudioSamplingRate:
+            description: 番組オーディオサンプリングレート
+            type: integer
+            enum:
+                - 16000 # 001
+                - 22050 # 010
+                - 24000 # 011
+                - 32000 # 101
+                - 44100 # 110
+                - 48000 # 111
+
+        StreamId:
+            description: ストリーム id
+            type: integer
+
+        StreamType:
+            description: ストリームの種類
+            type: string
+            enum:
+                - LiveStream
+                - LiveHLS
+                - RecordedStream
+                - RecordedHLS
+
+        URLSchemeInfo:
+            description: URL Scheme
+            type: object
+            properties:
+                ios:
+                    type: string
+                android:
+                    type: string
+                mac:
+                    type: string
+                win:
+                    type: string
+
+        M2TSStreamParam:
+            description: M2TS形式ストリーミングパラメータ
+            type: object
+            required:
+                - name
+                - isUnconverted
+            properties:
+                name:
+                    description: 表示名
+                    type: string
+                isUnconverted:
+                    description: 無変換か
+                    type: boolean
+
+        Config:
+            description: コンフィグ
+            type: object
+            required:
+                - socketIOPort
+                - broadcast
+                - recorded
+                - encode
+                - urlscheme
+                - isEnableLiveStream
+                - isEnableTSRecordedStream
+                - isEnableEncodedRecordedStream
+            properties:
+                socketIOPort:
+                    description: socket.io 通信で使用するポート
+                    type: integer
+                broadcast:
+                    description: 有効な放送波情報
+                    type: object
+                    required:
+                        - GR
+                        - BS
+                        - CS
+                        - SKY
+                    properties:
+                        GR:
+                            type: boolean
+                        BS:
+                            type: boolean
+                        CS:
+                            type: boolean
+                        SKY:
+                            type: boolean
+                recorded:
+                    description: 指定可能な録画ディレクトリ名
+                    type: array
+                    items:
+                        type: string
+                encode:
+                    description: エンコードモード
+                    type: array
+                    items:
+                        type: string
+                urlscheme:
+                    description: URL Scheme 情報
+                    type: object
+                    required:
+                        - m2ts
+                        - video
+                        - download
+                    properties:
+                        m2ts:
+                            $ref: '#/components/schemas/URLSchemeInfo'
+                        video:
+                            $ref: '#/components/schemas/URLSchemeInfo'
+                        download:
+                            $ref: '#/components/schemas/URLSchemeInfo'
+                isEnableLiveStream:
+                    description: ライブ視聴が有効か
+                    type: boolean
+                isEnableTSRecordedStream:
+                    description: 録画済みの TS ファイルのストリーミングが有効か
+                    type: boolean
+                isEnableEncodedRecordedStream:
+                    description: 録画済みのエンコード済みファイルのストリーミングが有効か
+                    type: boolean
+                streamConfig:
+                    description: ストリーミング設定
+                    type: object
+                    properties:
+                        live:
+                            description: ライブストリーミング設定
+                            type: object
+                            properties:
+                                m2ts:
+                                    description: ライブ M2TS ストリーミング設定
+                                    type: array
+                                    items:
+                                        $ref: '#/components/schemas/M2TSStreamParam'
+                                m2tsll:
+                                    description: ライブ M2TS Low Latency (mpegts.js 用) ストリーミング設定
+                                    type: array
+                                    items:
+                                        type: string
+                                webm:
+                                    description: ライブ WebM ストリーミング設定
+                                    type: array
+                                    items:
+                                        type: string
+                                mp4:
+                                    description: ライブ MP4 ストリーミング設定
+                                    type: array
+                                    items:
+                                        type: string
+                                hls:
+                                    description: ライブ HLS ストリーミング設定
+                                    type: array
+                                    items:
+                                        type: string
+                        recorded:
+                            description: 録画済みストリーミング設定
+                            type: object
+                            properties:
+                                ts:
+                                    description: 録画済み TS ファイルのストリーミング設定
+                                    type: object
+                                    properties:
+                                        webm:
+                                            description: 録画済み TS ファイルの WebM ストリーミング設定
+                                            type: array
+                                            items:
+                                                type: string
+                                        mp4:
+                                            description: 録画済み TS ファイルの MP4 ストリーミング設定
+                                            type: array
+                                            items:
+                                                type: string
+                                        hls:
+                                            description: 録画済み TS ファイルの HLS ストリーミング設定
+                                            type: array
+                                            items:
+                                                type: string
+                                encoded:
+                                    description: 録画エンコード済みファイルのストリーミング設定
+                                    type: object
+                                    properties:
+                                        webm:
+                                            description: 録画エンコード済みファイルの WebM ストリーミング設定
+                                            type: array
+                                            items:
+                                                type: string
+                                        mp4:
+                                            description: 録画エンコード済みファイルの MP4 ストリーミング設定
+                                            type: array
+                                            items:
+                                                type: string
+                                        hls:
+                                            description: 録画エンコード済みファイルの HLS ストリーミング設定
+                                            type: array
+                                            items:
+                                                type: string
+                kodiHosts:
+                    description: kodi hosts
+                    type: array
+                    items:
+                        type: string
+
+        ChannelItems:
+            type: array
+            items:
+                $ref: '#/components/schemas/ChannelItem'
+
+        ChannelItem:
+            description: チャンネル情報
+            required:
+                - id
+                - serviceId
+                - networkId
+                - name
+                - halfWidthName
+                - remoteControlKeyId
+                - hasLogoData
+                - channelType
+                - channel
+            properties:
+                id:
+                    $ref: '#/components/schemas/ChannelId'
+                serviceId:
+                    $ref: '#/components/schemas/ServiceId'
+                networkId:
+                    $ref: '#/components/schemas/NetworkId'
+                name:
+                    description: 放送局名
+                    type: string
+                halfWidthName:
+                    description: 放送局名(半角)
+                    type: string
+                hasLogoData:
+                    description: ロゴデータを持っているか
+                    type: boolean
+                channelType:
+                    $ref: '#/components/schemas/ChannelType'
+                channel:
+                    type: string
+                type:
+                    type: number
+
+        ScheduleChannleItem:
+            description: 番組表の放送局データ
+            required:
+                - id
+                - serviceId
+                - networkId
+                - name
+                - hasLogoData
+                - channelType
+            properties:
+                id:
+                    $ref: '#/components/schemas/ChannelId'
+                serviceId:
+                    $ref: '#/components/schemas/ServiceId'
+                networkId:
+                    $ref: '#/components/schemas/NetworkId'
+                name:
+                    description: 放送局名
+                    type: string
+                remoteControlKeyId:
+                    description: リモコン番号
+                    type: integer
+                hasLogoData:
+                    description: ロゴデータを持っているか
+                    type: boolean
+                channelType:
+                    $ref: '#/components/schemas/ChannelType'
+                type:
+                    type: number
+
+        ScheduleProgramItem:
+            description: 番組表の番組データ
+            required:
+                - id
+                - channelId
+                - startAt
+                - endAt
+                - isFree
+                - name
+            properties:
+                id:
+                    $ref: '#/components/schemas/ProgramId'
+                channelId:
+                    $ref: '#/components/schemas/ChannelId'
+                startAt:
+                    $ref: '#/components/schemas/UnixtimeMS'
+                endAt:
+                    $ref: '#/components/schemas/UnixtimeMS'
+                isFree:
+                    description: 無料放送か
+                    type: boolean
+                name:
+                    description: 番組名
+                    type: string
+                description:
+                    description: 番組詳細
+                    type: string
+                extended:
+                    description: 番組拡張
+                    type: string
+                rawExtended:
+                    description: 番組拡張 (Mirakurun の extended)
+                    type: object
+                genre1:
+                    $ref: '#/components/schemas/ProgramGenreLv1'
+                subGenre1:
+                    $ref: '#/components/schemas/ProgramGenreLv2'
+                genre2:
+                    $ref: '#/components/schemas/ProgramGenreLv1'
+                subGenre2:
+                    $ref: '#/components/schemas/ProgramGenreLv2'
+                genre3:
+                    $ref: '#/components/schemas/ProgramGenreLv1'
+                subGenre3:
+                    $ref: '#/components/schemas/ProgramGenreLv2'
+                videoType:
+                    $ref: '#/components/schemas/ProgramVideoType'
+                videoResolution:
+                    $ref: '#/components/schemas/ProgramVideoResolution'
+                videoStreamContent:
+                    type: integer
+                videoComponentType:
+                    type: integer
+                audioSamplingRate:
+                    $ref: '#/components/schemas/ProgramAudioSamplingRate'
+                audioComponentType:
+                    type: integer
+
+        ScheduleProgramItems:
+            type: array
+            items:
+                $ref: '#/components/schemas/ScheduleProgramItem'
+
+        Schedule:
+            description: 番組表データ
+            required:
+                - channel
+                - programs
+            properties:
+                channel:
+                    $ref: '#/components/schemas/ScheduleChannleItem'
+                programs:
+                    $ref: '#/components/schemas/ScheduleProgramItems'
+
+        Schedules:
+            type: array
+            items:
+                $ref: '#/components/schemas/Schedule'
+
+        ScheduleSearchOption:
+            description: 番組検索オプション
+            type: object
+            required:
+                - option
+                - isHalfWidth
+            properties:
+                option:
+                    $ref: '#/components/schemas/RuleSearchOption'
+                isHalfWidth:
+                    description: 半角文字で取得するか
+                    type: boolean
+                limit:
+                    description: 検索結果取得最大件数
+                    type: number
+
+        Rules:
+            description: ルール情報
+            type: object
+            required:
+                - rules
+                - total
+            properties:
+                rules:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Rule'
+                total:
+                    description: ルール総件数
+                    type: integer
+
+        Rule:
+            description: ルール
+            type: object
+            required:
+                - id
+            properties:
+                id:
+                    $ref: '#/components/schemas/RuleId'
+                reservesCnt:
+                    description: 予約件数
+                    type: integer
+            allOf:
+                - $ref: '#/components/schemas/AddRuleOption'
+
+        RuleKeywordItem:
+            type: object
+            required:
+                - id
+                - keyword
+            properties:
+                id:
+                    $ref: '#/components/schemas/RuleId'
+                keyword:
+                    type: string
+
+        RuleKeywordInfo:
+            description: ルールキーワード検索結果
+            type: object
+            required:
+                - items
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/RuleKeywordItem'
+
+        AddRuleOption:
+            description: ルール追加プション
+            type: object
+            required:
+                - isTimeSpecification
+                - searchOption
+                - reserveOption
+            properties:
+                isTimeSpecification:
+                    description: 時刻指定予約か
+                    type: boolean
+                searchOption:
+                    $ref: '#/components/schemas/RuleSearchOption'
+                reserveOption:
+                    $ref: '#/components/schemas/RuleReserveOption'
+                saveOption:
+                    $ref: '#/components/schemas/ReserveSaveOption'
+                encodeOption:
+                    $ref: '#/components/schemas/ReserveEncodedOption'
+
+        RuleSearchOption:
+            description: ルール検索オプション
+            type: object
+            properties:
+                keyword:
+                    description: 検索キーワード
+                    type: string
+                ignoreKeyword:
+                    description: 除外検索キーワード
+                    type: string
+                keyCS:
+                    description: 大文字小文字区別有効化 (検索キーワード)
+                    type: boolean
+                keyRegExp:
+                    description: 正規表現 (検索キーワード)
+                    type: boolean
+                name:
+                    description: 番組名 (検索キーワード)
+                    type: boolean
+                description:
+                    description: 概要 (検索キーワード)
+                    type: boolean
+                extended:
+                    description: 詳細 (検索キーワード)
+                    type: boolean
+                ignoreKeyCS:
+                    description: 大文字小文字区別有効化 (除外検索キーワード)
+                    type: boolean
+                ignoreKeyRegExp:
+                    description: 正規表現 (除外検索キーワード)
+                    type: boolean
+                ignoreName:
+                    description: 番組名 (除外検索キーワード)
+                    type: boolean
+                ignoreDescription:
+                    description: 概要 (除外検索キーワード)
+                    type: boolean
+                ignoreExtended:
+                    description: 詳細 (除外検索キーワード)
+                    type: boolean
+                GR:
+                    description: GR
+                    type: boolean
+                BS:
+                    description: BS
+                    type: boolean
+                CS:
+                    description: CS
+                    type: boolean
+                SKY:
+                    description: SKY
+                    type: boolean
+                channelIds:
+                    description: 放送局
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ChannelId'
+                genres:
+                    description: ジャンル
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Genre'
+                times:
+                    description: 時刻範囲
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SearchTime'
+                isFree:
+                    description: 無料放送か
+                    type: boolean
+                durationMin:
+                    description: 番組最小時間 (分)
+                    type: integer
+                durationMax:
+                    description: 番組最大時間 (分)
+                    type: integer
+                searchPeriods:
+                    description: 検索対象期間
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SearchPeriod'
+
+        Genre:
+            description: ジャンル設定
+            type: object
+            required:
+                - genre
+            properties:
+                genre:
+                    $ref: '#/components/schemas/ProgramGenreLv1'
+                subGenre:
+                    $ref: '#/components/schemas/ProgramGenreLv2'
+
+        SearchTime:
+            description: 時刻範囲指定オプション
+            type: object
+            required:
+                - week
+            properties:
+                start:
+                    description:
+                        開始時刻 1 - 23, 時刻予約の場合は 0 時を 0 とした 0 ~ (60 * 50 * 24) - 1
+                        秒までの開始時刻を指定する
+                    type: integer
+                range:
+                    description:
+                        開始時刻からの時刻範囲(時) 1 - 23, 時刻予約の場合は秒で時間の長さを指定する 1 ~ 60 * 50 * 24 秒
+                    type: integer
+                week:
+                    description:
+                        曜日指定 0x01, 0x02, 0x04, 0x08, 0x10, 0x20 ,0x40 が日〜土に対応するので and
+                        演算で曜日を指定する
+                    type: integer
+
+        SearchPeriod:
+            description: 検索対象期間オプション
+            type: object
+            required:
+                - startAt
+                - endAt
+            properties:
+                startAt:
+                    $ref: '#/components/schemas/UnixtimeMS'
+                endAt:
+                    $ref: '#/components/schemas/UnixtimeMS'
+
+        RuleReserveOption:
+            description: ルール予約オプション
+            type: object
+            required:
+                - enable
+                - allowEndLack
+                - avoidDuplicate
+            properties:
+                enable:
+                    description: ルールが有効か
+                    type: boolean
+                allowEndLack:
+                    description: 末尾切れを許可するか
+                    type: boolean
+                avoidDuplicate:
+                    description: 録画済みの重複番組を排除するか
+                    type: boolean
+                periodToAvoidDuplicate:
+                    description: 重複を避ける期間
+                    type: integer
+                tags:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/RecordedTagId'
+
+        ReserveSaveOption:
+            description: 予約保存オプション
+            type: object
+            properties:
+                parentDirectoryName:
+                    description: 親保存ディレクトリ
+                    type: string
+                directory:
+                    description: 保存ディレクトリ
+                    type: string
+                recordedFormat:
+                    description: ファイル名フォーマット
+                    type: string
+
+        ReserveEncodedOption:
+            description: 予約エンコードオプション
+            required:
+                - isDeleteOriginalAfterEncode
+            properties:
+                mode1:
+                    description: エンコードモード1
+                    type: string
+                encodeParentDirectoryName1:
+                    description: エンコードモード1親ディレクトリ
+                    type: string
+                directory1:
+                    description: エンコードモード1ディレクトリ
+                    type: string
+                mode2:
+                    description: エンコードモード2
+                    type: string
+                encodeParentDirectoryName2:
+                    description: エンコードモード2親ディレクトリ
+                    type: string
+                directory2:
+                    description: エンコードモード2ディレクトリ
+                    type: string
+                mode3:
+                    description: エンコードモード3
+                    type: string
+                encodeParentDirectoryName3:
+                    description: エンコードモード3親ディレクトリ
+                    type: string
+                directory3:
+                    description: エンコードモード3ディレクトリ
+                    type: string
+                isDeleteOriginalAfterEncode:
+                    description: エンコード後に ts を削除するか
+                    type: boolean
+
+        AddedRule:
+            description: ルール追加成功応答データ
+            type: object
+            required:
+                - ruleId
+            properties:
+                ruleId:
+                    $ref: '#/components/schemas/RuleId'
+
+        EditManualReserveOption:
+            description: 手動予約編集オプション
+            type: object
+            required:
+                - allowEndLack
+            properties:
+                allowEndLack:
+                    description: 末尾切れを許すか
+                    type: boolean
+                tags:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/RecordedTagId'
+                saveOption:
+                    $ref: '#/components/schemas/ReserveSaveOption'
+                encodeOption:
+                    $ref: '#/components/schemas/ReserveEncodedOption'
+
+        ManualReserveOption:
+            description: 手動予約オプション
+            type: object
+            allOf:
+                - $ref: '#/components/schemas/EditManualReserveOption'
+            properties:
+                programId:
+                    $ref: '#/components/schemas/ProgramId'
+                timeSpecifiedOption:
+                    type: object
+                    description: 時刻指定オプション
+                    required:
+                        - name
+                        - channelId
+                        - startAt
+                        - endAt
+                    properties:
+                        name:
+                            description: 番組名
+                            type: string
+                        channelId:
+                            $ref: '#/components/schemas/ChannelId'
+                        startAt:
+                            $ref: '#/components/schemas/UnixtimeMS'
+                        endAt:
+                            $ref: '#/components/schemas/UnixtimeMS'
+
+        AddedReserve:
+            description: 予約成功応答データ
+            type: object
+            required:
+                - reserveId
+            properties:
+                reserveId:
+                    $ref: '#/components/schemas/ReserveId'
+
+        ReserveItem:
+            description: 予約番組情報
+            type: object
+            required:
+                - id
+                - isSkip
+                - isConflict
+                - isOverlap
+                - allowEndLack
+                - isTimeSpecified
+                - isDeleteOriginalAfterEncode
+                - channelId
+                - startAt
+                - endAt
+                - name
+            properties:
+                id:
+                    $ref: '#/components/schemas/ReserveId'
+                ruleId:
+                    $ref: '#/components/schemas/RuleId'
+                isSkip:
+                    type: boolean
+                isConflict:
+                    type: boolean
+                isOverlap:
+                    type: boolean
+                allowEndLack:
+                    type: boolean
+                isTimeSpecified:
+                    type: boolean
+                tags:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/RecordedTagId'
+                parentDirectoryName:
+                    type: string
+                directory:
+                    type: string
+                recordedFormat:
+                    type: string
+                encodeMode1:
+                    type: integer
+                encodeParentDirectoryName1:
+                    type: string
+                encodeDirectory1:
+                    type: string
+                encodeMode2:
+                    type: integer
+                encodeParentDirectoryName2:
+                    type: string
+                encodeDirectory2:
+                    type: string
+                encodeMode3:
+                    type: integer
+                encodeParentDirectoryName3:
+                    type: string
+                encodeDirectory3:
+                    type: integer
+                isDeleteOriginalAfterEncode:
+                    type: boolean
+                programId:
+                    $ref: '#/components/schemas/ProgramId'
+                channelId:
+                    $ref: '#/components/schemas/ChannelId'
+                startAt:
+                    $ref: '#/components/schemas/UnixtimeMS'
+                endAt:
+                    $ref: '#/components/schemas/UnixtimeMS'
+                name:
+                    type: string
+                description:
+                    type: string
+                extended:
+                    type: string
+                rawExtended:
+                    type: object
+                genre1:
+                    $ref: '#/components/schemas/ProgramGenreLv1'
+                subGenre1:
+                    $ref: '#/components/schemas/ProgramGenreLv2'
+                genre2:
+                    $ref: '#/components/schemas/ProgramGenreLv1'
+                subGenre2:
+                    $ref: '#/components/schemas/ProgramGenreLv2'
+                genre3:
+                    $ref: '#/components/schemas/ProgramGenreLv1'
+                subGenre3:
+                    $ref: '#/components/schemas/ProgramGenreLv2'
+                videoType:
+                    $ref: '#/components/schemas/ProgramVideoType'
+                videoResolution:
+                    $ref: '#/components/schemas/ProgramVideoResolution'
+                videoStreamContent:
+                    type: integer
+                videoComponentType:
+                    type: integer
+                audioSamplingRate:
+                    $ref: '#/components/schemas/ProgramAudioSamplingRate'
+                audioComponentType:
+                    type: integer
+
+        Reserves:
+            description: 予約情報
+            type: object
+            required:
+                - reserves
+                - total
+            properties:
+                reserves:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ReserveItem'
+                total:
+                    description: 予約総件数
+                    type: integer
+
+        ReserveListItem:
+            description: 予約リストitem
+            type: object
+            required:
+                - reserveId
+            properties:
+                reserveId:
+                    $ref: '#/components/schemas/ReserveId'
+                programId:
+                    $ref: '#/components/schemas/ProgramId'
+                ruleId:
+                    $ref: '#/components/schemas/RuleId'
+
+        ReserveLists:
+            description: 予約, 除外, 重複, 競合の reserveId のリスト
+            type: object
+            required:
+                - normal
+                - conflicts
+                - skips
+                - overlaps
+            properties:
+                normal:
+                    $ref: '#/components/schemas/ReserveListItem'
+                conflicts:
+                    $ref: '#/components/schemas/ReserveListItem'
+                skips:
+                    $ref: '#/components/schemas/ReserveListItem'
+                overlaps:
+                    $ref: '#/components/schemas/ReserveListItem'
+
+        ReserveCnts:
+            description: 予約カウント
+            type: object
+            required:
+                - normal
+                - conflicts
+                - skips
+                - overlaps
+            properties:
+                normal:
+                    description: 通常予約数
+                    type: integer
+                conflicts:
+                    description: 競合予約数
+                    type: integer
+                skips:
+                    description: 競合予約数
+                    type: integer
+                overlaps:
+                    description: 重複予約数
+                    type: integer
+
+        Records:
+            description: 録画情報
+            type: object
+            required:
+                - records
+                - total
+            properties:
+                records:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/RecordedItem'
+                total:
+                    description: 録画総件数
+                    type: integer
+
+        RecordedItem:
+            description: 録画番組情報
+            type: object
+            required:
+                - id
+                - startAt
+                - endAt
+                - name
+                - isRecording
+                - isEncoding
+                - isProtected
+            properties:
+                id:
+                    $ref: '#/components/schemas/RecordedId'
+                ruleId:
+                    $ref: '#/components/schemas/RuleId'
+                programId:
+                    $ref: '#/components/schemas/ProgramId'
+                channelId:
+                    $ref: '#/components/schemas/ChannelId'
+                startAt:
+                    $ref: '#/components/schemas/UnixtimeMS'
+                endAt:
+                    $ref: '#/components/schemas/UnixtimeMS'
+                name:
+                    description: 番組名
+                    type: string
+                description:
+                    description: 番組詳細
+                    type: string
+                extended:
+                    description: 番組拡張
+                    type: string
+                rawExtended:
+                    description: 番組拡張 (Mirakurun の extended)
+                    type: object
+                genre1:
+                    $ref: '#/components/schemas/ProgramGenreLv1'
+                subGenre1:
+                    $ref: '#/components/schemas/ProgramGenreLv2'
+                genre2:
+                    $ref: '#/components/schemas/ProgramGenreLv1'
+                subGenre2:
+                    $ref: '#/components/schemas/ProgramGenreLv2'
+                genre3:
+                    $ref: '#/components/schemas/ProgramGenreLv1'
+                subGenre3:
+                    $ref: '#/components/schemas/ProgramGenreLv2'
+                videoType:
+                    $ref: '#/components/schemas/ProgramVideoType'
+                videoResolution:
+                    $ref: '#/components/schemas/ProgramVideoResolution'
+                videoStreamContent:
+                    type: integer
+                videoComponentType:
+                    type: integer
+                audioSamplingRate:
+                    $ref: '#/components/schemas/ProgramAudioSamplingRate'
+                audioComponentType:
+                    type: integer
+                isRecording:
+                    description: 録画中か
+                    type: boolean
+                thumbnails:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ThumbnailId'
+                videoFiles:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/VideoFile'
+                dropLog:
+                    $ref: '#/components/schemas/DropLogFile'
+                tags:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/RecordedTag'
+                isEncoding:
+                    description: エンコード中か
+                    type: boolean
+                isProtected:
+                    description: 自動録画削除対象外か
+                    type: boolean
+
+        CreateNewRecordedOption:
+            description: 新規追加する録画番組情報
+            type: object
+            required:
+                - channelId
+                - startAt
+                - endAt
+                - name
+            properties:
+                ruleId:
+                    $ref: '#/components/schemas/RuleId'
+                channelId:
+                    $ref: '#/components/schemas/ChannelId'
+                startAt:
+                    $ref: '#/components/schemas/UnixtimeMS'
+                endAt:
+                    $ref: '#/components/schemas/UnixtimeMS'
+                name:
+                    description: 番組名
+                    type: string
+                description:
+                    description: 番組詳細
+                    type: string
+                extended:
+                    description: 番組拡張
+                    type: string
+                genre1:
+                    $ref: '#/components/schemas/ProgramGenreLv1'
+                subGenre1:
+                    $ref: '#/components/schemas/ProgramGenreLv2'
+                genre2:
+                    $ref: '#/components/schemas/ProgramGenreLv1'
+                subGenre2:
+                    $ref: '#/components/schemas/ProgramGenreLv2'
+                genre3:
+                    $ref: '#/components/schemas/ProgramGenreLv1'
+                subGenre3:
+                    $ref: '#/components/schemas/ProgramGenreLv2'
+
+        CreatedNewRecorded:
+            description: 録画番組情報の新規作成成功応答データ
+            type: object
+            required:
+                - recordedId
+            properties:
+                recordedId:
+                    $ref: '#/components/schemas/RecordedId'
+
+        VideoFile:
+            description: ビデオファイル情報
+            type: object
+            required:
+                - id
+                - name
+                - type
+                - size
+            properties:
+                id:
+                    $ref: '#/components/schemas/VideoFileId'
+                name:
+                    description: ビデオ名 (Web上の表示名)
+                    type: string
+                filename:
+                    description: ビデオファイル名
+                    type: string
+                type:
+                    $ref: '#/components/schemas/VideoFileType'
+                size:
+                    description: ファイルサイズ
+                    type: integer
+
+        VideoFileDuration:
+            description: ビデオファイルの長さ
+            type: object
+            required:
+                - duration
+            properties:
+                duration:
+                    description: 動画長(秒)
+                    type: number
+
+        DropLogFile:
+            description: ドロップログファイル情報
+            type: object
+            required:
+                - id
+                - errorCnt
+                - dropCnt
+                - scramblingCnt
+            properties:
+                id:
+                    $ref: '#/components/schemas/DropLogFileId'
+                errorCnt:
+                    description: エラーカウント
+                    type: integer
+                dropCnt:
+                    description: ドロップカウント
+                    type: integer
+                scramblingCnt:
+                    description: スクランブルカウント
+                    type: integer
+
+        RecordedTag:
+            description: タグ情報
+            type: object
+            required:
+                - id
+                - name
+                - color
+            properties:
+                id:
+                    $ref: '#/components/schemas/RecordedTagId'
+                name:
+                    description: タグ名
+                    type: string
+                color:
+                    description: 色
+                    type: string
+
+        RecordedTags:
+            description: 録画タグ情報
+            type: object
+            required:
+                - tags
+                - total
+            properties:
+                tags:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/RecordedTag'
+                total:
+                    description: 予約総件数
+                    type: integer
+
+        AddRecordedTagOption:
+            description: 録画タグ追加プション
+            type: object
+            required:
+                - name
+                - color
+            properties:
+                name:
+                    description: タグ名
+                    type: string
+                color:
+                    description: 色
+                    type: string
+
+        RelateRecordedTagOption:
+            description: 録画番組とタグの関連付けオプション
+            type: object
+            required:
+                - recordedId
+            properties:
+                recordedId:
+                    $ref: '#/components/schemas/RecordedId'
+
+        AddedRecordedTag:
+            description: タグ追加成功応答データ
+            type: object
+            required:
+                - tagId
+            properties:
+                tagId:
+                    $ref: '#/components/schemas/RecordedTagId'
+
+        RecordedChannelListItem:
+            description: recorded が持つ channelId のリスト
+            type: object
+            required:
+                - cnt
+                - channelId
+            properties:
+                cnt:
+                    description: 録画数
+                    type: integer
+                channelId:
+                    $ref: '#/components/schemas/ChannelId'
+
+        RecordedGenreListItem:
+            description: recorded が持つ genre のリスト
+            type: object
+            required:
+                - cnt
+                - genre
+            properties:
+                cnt:
+                    description: 録画数
+                    type: integer
+                genre:
+                    $ref: '#/components/schemas/ProgramGenreLv1'
+
+        RecordedSearchOptions:
+            description: recorded が持つ検索オプション情報
+            type: object
+            required:
+                - channels
+                - genres
+            properties:
+                channels:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/RecordedChannelListItem'
+                genres:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/RecordedGenreListItem'
+
+        SendVideoLinkToKodiOption:
+            description: kodiへビデオリンクを送信するときのオプション
+            type: object
+            required:
+                - kodiName
+            properties:
+                kodiName:
+                    description: config の kodi の name
+                    type: string
+
+        UploadVideoFileOption:
+            description: ビデオファイルをアップロード
+            type: object
+            required:
+                - recordedId
+                - parentDirectoryName
+                - viewName
+                - fileType
+                - file
+            properties:
+                recordedId:
+                    $ref: '#/components/schemas/RecordedId'
+                parentDirectoryName:
+                    description: 親保存ディレクトリ
+                    type: string
+                subDirectory:
+                    description: 保存ディレクトリ
+                    type: string
+                viewName:
+                    description: 表示名
+                    type: string
+                fileType:
+                    $ref: '#/components/schemas/VideoFileType'
+                file:
+                    type: string
+                    format: binary
+
+        Version:
+            description: バージョン情報
+            type: object
+            required:
+                - version
+            properties:
+                version:
+                    type: string
+
+        EncodeProgramItem:
+            description: エンコードプログラム情報
+            type: object
+            required:
+                - id
+                - mode
+                - recorded
+            properties:
+                id:
+                    $ref: '#/components/schemas/EncodeId'
+                mode:
+                    description: エンコード名
+                    type: string
+                recorded:
+                    $ref: '#/components/schemas/RecordedItem'
+                percent:
+                    description: 進捗
+                    type: number
+                log:
+                    description: ログ
+                    type: string
+
+        EncodeInfo:
+            description: エンコード情報
+            type: object
+            required:
+                - runningItems
+                - waitItems
+            properties:
+                runningItems:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/EncodeProgramItem'
+                waitItems:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/EncodeProgramItem'
+
+        AddEncodeProgramOption:
+            description: エンコード追加時のオプション
+            type: object
+            required:
+                - recordedId
+                - sourceVideoFileId
+                - parentDir
+                - mode
+                - removeOriginal
+            properties:
+                recordedId:
+                    $ref: '#/components/schemas/RecordedId'
+                sourceVideoFileId:
+                    $ref: '#/components/schemas/VideoFileId'
+                parentDir:
+                    description: 親ディレクトリ名 config recorded の name
+                    type: string
+                directory:
+                    description: 親ディレクトリ以下のディレクトリ設定
+                    type: string
+                mode:
+                    description: エンコードプリセット名 config encode の name
+                    type: string
+                removeOriginal:
+                    description: 元ファイルを削除するか
+                    type: boolean
+
+        AddManualEncodeProgramOption:
+            description: エンコード手動追加時のオプション
+            type: object
+            required:
+                - recordedId
+                - sourceVideoFileId
+                - mode
+                - removeOriginal
+            properties:
+                recordedId:
+                    $ref: '#/components/schemas/RecordedId'
+                sourceVideoFileId:
+                    $ref: '#/components/schemas/VideoFileId'
+                parentDir:
+                    description: 親ディレクトリ名 config recorded の name, isSaveSameDirectory が false の場合は必須
+                    type: string
+                directory:
+                    description: 親ディレクトリ以下のディレクトリ設定
+                    type: string
+                isSaveSameDirectory:
+                    description: ソースビデオファイルと同じ場所に保存するか
+                    type: boolean
+                mode:
+                    description: エンコードプリセット名 config encode の name
+                    type: string
+                removeOriginal:
+                    description: 元ファイルを削除するか
+                    type: boolean
+
+        AddedEncode:
+            description: エンコード追加成功応答データ
+            type: object
+            required:
+                - encodeId
+            properties:
+                encodeId:
+                    $ref: '#/components/schemas/EncodeId'
+
+        StreamInfoItem:
+            description: ストリーム情報
+            type: object
+            required:
+                - streamId
+                - type
+                - mode
+                - isEnable
+                - channelId
+                - name
+                - startAt
+                - endAt
+            properties:
+                streamId:
+                    $ref: '#/components/schemas/StreamId'
+                type:
+                    $ref: '#/components/schemas/StreamType'
+                mode:
+                    description: ストリーミング設定
+                    type: number
+                isEnable:
+                    description: 放送波が有効か (HLS 形式の場合有効)
+                    type: boolean
+                channelId:
+                    $ref: '#/components/schemas/ChannelId'
+                videoFileId:
+                    $ref: '#/components/schemas/VideoFileId'
+                recordedId:
+                    $ref: '#/components/schemas/RecordedId'
+                name:
+                    description: ストリーミング番組名
+                    type: string
+                startAt:
+                    $ref: '#/components/schemas/UnixtimeMS'
+                endAt:
+                    $ref: '#/components/schemas/UnixtimeMS'
+                description:
+                    description: ストリーミング番組詳細
+                    type: string
+                extended:
+                    description: ストリーミング番組拡張
+                    type: string
+
+        StreamInfo:
+            type: object
+            required:
+                - items
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/StreamInfoItem'
+
+        StartStreamInfo:
+            description: ストリーム開始情報
+            type: object
+            required:
+                - streamId
+            properties:
+                streamId:
+                    $ref: '#/components/schemas/StreamId'
+
+        StorageItem:
+            description: ストレージ使用状況
+            type: object
+            required:
+                - name
+                - available
+                - used
+                - total
+            properties:
+                name:
+                    description: ディスク名
+                    type: string
+                available:
+                    description: 空き容量 (byte)
+                    type: integer
+                used:
+                    description: 使用量 (byte)
+                    type: integer
+                total:
+                    description: 総容量 (byte)
+                    type: integer
+
+        StorageInfo:
+            description: ストレージ情報
+            type: object
+            required:
+                - items
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/StorageItem'
+
+        Error:
+            type: object
+            readOnly: true
+            required:
+                - code
+                - message
+            properties:
+                code:
+                    description: 'HTTPステータスコード'
+                    type: integer
+                    format: int32
+                message:
+                    description: 'エラーメッセージ'
+                    type: string
+                errors:
+                    description: 'Error'
+                    type: string
+
+    parameters:
+        Offset:
+            description: offset
+            in: query
+            name: offset
+            schema:
+                type: integer
+                minimum: 0
+                default: 0
+
+        Limit:
+            description: limit
+            in: query
+            name: limit
+            schema:
+                type: integer
+                minimum: 0
+                default: 24
+
+        StartAt:
+            description: 開始時刻
+            in: query
+            name: startAt
+            required: true
+            schema:
+                $ref: '#/components/schemas/UnixtimeMS'
+
+        EndAt:
+            description: 終了時刻
+            in: query
+            name: endAt
+            required: true
+            schema:
+                $ref: '#/components/schemas/UnixtimeMS'
+
+        Days:
+            description: 取得日数
+            in: query
+            name: days
+            required: true
+            schema:
+                type: integer
+
+        AddtionTime:
+            description: 追加時間 (ms)
+            in: query
+            name: time
+            required: false
+            schema:
+                $ref: '#/components/schemas/UnixtimeMS'
+
+        IsHalfWidth:
+            description: 半角文字で取得するか
+            in: query
+            name: isHalfWidth
+            required: true
+            schema:
+                type: boolean
+
+        NeedsRawExtended:
+            description: rawExtended が必要か
+            in: query
+            name: needsRawExtended
+            required: false
+            schema:
+                type: boolean
+
+        IsFreeProgram:
+            description: '無料放送のみ取得するか (true: 無料放送, false: 有料放送, 無指定: 全て)'
+            in: query
+            name: isFree
+            required: false
+            schema:
+                type: boolean
+
+        QueryChannelId:
+            description: 放送局 id
+            name: channelId
+            in: query
+            schema:
+                $ref: '#/components/schemas/ChannelId'
+
+        QueryRecordedId:
+            description: recorded id
+            name: recordedId
+            in: query
+            schema:
+                $ref: '#/components/schemas/RecordedId'
+
+        QueryRuleId:
+            description: ルールid
+            name: ruleId
+            in: query
+            schema:
+                $ref: '#/components/schemas/RuleId'
+
+        QueryProgramGenre:
+            description: ジャンル
+            name: genre
+            in: query
+            schema:
+                $ref: '#/components/schemas/ProgramGenreLv1'
+
+        QueryKeyword:
+            description: キーワード
+            name: keyword
+            in: query
+            schema:
+                type: string
+
+        QueryHasOriginalFile:
+            description: オリジナルファイルを含むか
+            name: hasOriginalFile
+            in: query
+            schema:
+                type: boolean
+
+        QueryName:
+            description: name
+            name: name
+            in: query
+            schema:
+                type: string
+
+        QueryExcludeRecordedTagId:
+            description: 除外する RecordedTagId
+            name: excludeTagId
+            in: query
+            schema:
+                type: array
+                items:
+                    type: string
+
+        requiredGR:
+            description: GR
+            in: query
+            name: GR
+            required: true
+            schema:
+                type: boolean
+
+        requiredBS:
+            description: BS
+            in: query
+            name: BS
+            required: true
+            schema:
+                type: boolean
+
+        requiredCS:
+            description: CS
+            in: query
+            name: CS
+            required: true
+            schema:
+                type: boolean
+
+        requiredSKY:
+            description: SKY
+            in: query
+            name: SKY
+            required: true
+            schema:
+                type: boolean
+
+        GetReserveType:
+            description: 予約情報取得タイプ
+            in: query
+            name: type
+            schema:
+                enum:
+                    - all
+                    - normal
+                    - conflict
+                    - skip
+                    - overlap
+        IsDownload:
+            description: ファイルをダウンロードするか
+            in: query
+            name: isDownload
+            schema:
+                type: boolean
+
+        IsReverse:
+            description: 逆順で取得するか
+            in: query
+            name: isReverse
+            schema:
+                type: boolean
+
+        LogFileMaxSize:
+            description: ファイル最大サイズ (kByte)
+            in: query
+            name: maxsize
+            schema:
+                type: integer
+                minimum: 0
+                default: 512
+
+        PathChannelId:
+            description: 放送局 id
+            in: path
+            name: channelId
+            required: true
+            schema:
+                $ref: '#/components/schemas/ChannelId'
+
+        PathProgramId:
+            description: program id
+            in: path
+            name: programId
+            required: true
+            schema:
+                $ref: '#/components/schemas/ProgramId'
+
+        PathReserveId:
+            description: 予約id
+            in: path
+            name: reserveId
+            required: true
+            schema:
+                type: integer
+
+        PathRuleId:
+            description: ルールid
+            in: path
+            name: ruleId
+            required: true
+            schema:
+                type: integer
+
+        PathThumbnailId:
+            description: thumbnail id
+            in: path
+            name: thumbnailId
+            required: true
+            schema:
+                type: integer
+
+        PathRecordedId:
+            description: recorded id
+            in: path
+            name: recordedId
+            required: true
+            schema:
+                type: integer
+
+        PathRecordedTagId:
+            description: recorded tag id
+            in: path
+            name: tagId
+            required: true
+            schema:
+                type: integer
+
+        PathVideoFileId:
+            description: video file id
+            in: path
+            name: videoFileId
+            required: true
+            schema:
+                type: integer
+
+        PathDropLogFileId:
+            description: drop log file id
+            in: path
+            name: dropLogFileId
+            required: true
+            schema:
+                type: integer
+
+        PathEncodeId:
+            description: エンコード id
+            in: path
+            name: encodeId
+            required: true
+            schema:
+                type: integer
+
+        PathStreamId:
+            description: ストリーム id
+            in: path
+            name: streamId
+            required: true
+            schema:
+                $ref: '#/components/schemas/StreamId'
+
+        StreamMode:
+            description: ストリーミング設定
+            in: query
+            name: mode
+            required: true
+            schema:
+                type: integer
+
+        StreamPlayPosition:
+            description: 再生位置
+            in: query
+            name: ss
+            required: true
+            schema:
+                type: integer
+
+        IPTVIsHalfWidth:
+            description: 半角文字で取得するか
+            in: query
+            name: isHalfWidth
+            required: false
+            schema:
+                type: boolean
+                default: true
+
+        IPTVDays:
+            description: 取得日数
+            in: query
+            name: days
+            required: false
+            schema:
+                type: integer
+                default: 3
