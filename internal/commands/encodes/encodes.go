@@ -3,6 +3,7 @@ package encodes
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/miscord-dev/epgstationctl/internal/client"
 	"github.com/miscord-dev/epgstationctl/internal/commands/root"
@@ -14,6 +15,11 @@ import (
 var (
 	// Common flags
 	halfWidth bool
+
+	// List flags
+	verbose bool
+	full    bool
+	columns string
 
 	// Add command flags
 	recordedId        int64
@@ -34,7 +40,15 @@ var encodesCmd = &cobra.Command{
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List encoding jobs",
-	Long:  "List running and queued encoding jobs",
+	Long: `List running and queued encoding jobs.
+
+Column Display Options:
+  Default: Shows essential columns (ID, Mode, Status, Percent, Name)
+  --verbose: Shows additional columns (includes Log)
+  --full: Shows all available columns
+  --columns: Custom column selection (e.g., --columns=ID,Mode,Status,Name)
+
+Available columns: ID, Mode, Status, Percent, Name, Log`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg := root.GetConfig()
 		client, err := client.NewEPGStationClient(cfg)
@@ -93,7 +107,28 @@ var listCmd = &cobra.Command{
 		case "json":
 			formatter = output.NewJSONFormatter(nil)
 		default:
-			formatter = output.NewTableFormatter(nil, cfg.Output.NoHeader)
+			// Define column sets
+			defaultColumns := []string{"ID", "Mode", "Status", "Percent", "Name"}
+			verboseColumns := []string{"ID", "Mode", "Status", "Percent", "Name", "Log"}
+
+			var selectedColumns []string
+
+			if columns != "" {
+				// Custom columns specified
+				selectedColumns = strings.Split(strings.ReplaceAll(columns, " ", ""), ",")
+			} else if full {
+				// Full output - use default formatter (all columns)
+				formatter = output.NewTableFormatter(nil, cfg.Output.NoHeader)
+				return formatter.Format(displayItems)
+			} else if verbose {
+				// Verbose output
+				selectedColumns = verboseColumns
+			} else {
+				// Default minimal output
+				selectedColumns = defaultColumns
+			}
+
+			formatter = output.NewTableFormatterWithColumns(nil, cfg.Output.NoHeader, selectedColumns)
 		}
 
 		return formatter.Format(displayItems)
@@ -240,6 +275,9 @@ var statusCmd = &cobra.Command{
 func init() {
 	// List command flags
 	listCmd.Flags().BoolVar(&halfWidth, "half-width", true, "Use half-width characters")
+	listCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Show more columns (includes Log)")
+	listCmd.Flags().BoolVar(&full, "full", false, "Show all available columns")
+	listCmd.Flags().StringVar(&columns, "columns", "", "Comma-separated list of columns to display (e.g., 'ID,Mode,Status,Name')")
 
 	// Add command flags
 	addCmd.Flags().Int64Var(&recordedId, "recorded-id", 0, "Recorded program ID (required)")
