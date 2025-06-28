@@ -12,6 +12,14 @@ A comprehensive command-line interface for [EPGStation](https://github.com/l3tnu
 - **Recording System Monitoring**: 
   - List active recordings with pagination support
   - Monitor recording system status and statistics
+- **Reservation Management**:
+  - List, create, update, and delete reservations
+  - Handle reservation conflicts, skips, and overlaps
+  - View reservation status summaries and counts
+- **Encoding Job Management**:
+  - List running and queued encoding jobs with progress
+  - Add new manual encoding jobs for recorded content
+  - Cancel active or queued encoding jobs
 - **Multiple Output Formats**: 
   - Clean table format for human reading (default)
   - JSON output for scripting and automation
@@ -151,6 +159,56 @@ epgstationctl recordings list --offset=0 --limit=50
 epgstationctl recordings list --verbose --half-width=true
 ```
 
+#### Reservations
+
+```bash
+# List all reservations
+epgstationctl reserves list
+
+# Filter reservations by type and rule
+epgstationctl reserves list --type=normal --rule-id=123
+
+# Show detailed reservation information
+epgstationctl reserves show 456
+
+# Create a new reservation
+epgstationctl reserves create --program-id=789 --encode-mode1=H.264
+
+# Update reservation settings
+epgstationctl reserves update 456 --encode-mode1=H.265 --parent-dir=/recordings
+
+# Delete a reservation
+epgstationctl reserves delete 456
+
+# Remove skip status from reservation
+epgstationctl reserves unskip 456
+
+# Show reservation status summary
+epgstationctl reserves status
+
+# Trigger reservation system update
+epgstationctl reserves update-system
+```
+
+#### Encoding Jobs
+
+```bash
+# List all encoding jobs (running and queued)
+epgstationctl encodes list
+
+# Add a new encoding job
+epgstationctl encodes add --recorded-id=123 --mode=H.264 --parent-dir=/encoded
+
+# Cancel an encoding job
+epgstationctl encodes cancel 789
+
+# Show encoding system status
+epgstationctl encodes status
+
+# Add encoding job with options
+epgstationctl encodes add --recorded-id=123 --mode=H.265 --remove-original --save-same-dir
+```
+
 ### Advanced Usage Examples
 
 #### Using Environment Variables
@@ -248,7 +306,9 @@ epgstationctl/
 │   ├── commands/             # CLI command implementations
 │   │   ├── channels/         # Channel commands
 │   │   ├── programs/         # Program commands
-│   │   └── recordings/       # Recording commands
+│   │   ├── recordings/       # Recording commands
+│   │   ├── reserves/         # Reservation commands
+│   │   └── encodes/          # Encoding commands
 │   ├── client/               # EPGStation API client wrapper
 │   ├── config/               # Configuration management
 │   ├── epgstation/           # Generated API client
