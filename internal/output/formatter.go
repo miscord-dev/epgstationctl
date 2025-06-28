@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"time"
 
 	"github.com/olekukonko/tablewriter"
 )
@@ -21,6 +22,7 @@ type JSONFormatter struct {
 type TableFormatter struct {
 	writer   io.Writer
 	noHeader bool
+	columns  []string
 }
 
 func NewJSONFormatter(writer io.Writer) *JSONFormatter {
@@ -35,6 +37,13 @@ func NewTableFormatter(writer io.Writer, noHeader bool) *TableFormatter {
 		writer = os.Stdout
 	}
 	return &TableFormatter{writer: writer, noHeader: noHeader}
+}
+
+func NewTableFormatterWithColumns(writer io.Writer, noHeader bool, columns []string) *TableFormatter {
+	if writer == nil {
+		writer = os.Stdout
+	}
+	return &TableFormatter{writer: writer, noHeader: noHeader, columns: columns}
 }
 
 func (f *JSONFormatter) Format(data interface{}) error {
@@ -149,6 +158,10 @@ func (f *TableFormatter) formatSimpleSlice(v reflect.Value) error {
 }
 
 func (f *TableFormatter) extractHeaders(t reflect.Type) []string {
+	if len(f.columns) > 0 {
+		return f.columns
+	}
+
 	var headers []string
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
@@ -161,6 +174,10 @@ func (f *TableFormatter) extractHeaders(t reflect.Type) []string {
 }
 
 func (f *TableFormatter) extractRow(v reflect.Value) []string {
+	if len(f.columns) > 0 {
+		return f.extractRowWithColumns(v)
+	}
+
 	var row []string
 	for i := 0; i < v.NumField(); i++ {
 		if !v.Type().Field(i).IsExported() {
@@ -170,6 +187,42 @@ func (f *TableFormatter) extractRow(v reflect.Value) []string {
 		row = append(row, value)
 	}
 	return row
+}
+
+func (f *TableFormatter) extractRowWithColumns(v reflect.Value) []string {
+	var row []string
+	t := v.Type()
+
+	for _, columnName := range f.columns {
+		found := false
+		for i := 0; i < v.NumField(); i++ {
+			field := t.Field(i)
+			if !field.IsExported() {
+				continue
+			}
+			if field.Name == columnName {
+				value := f.formatValueWithContext(v.Field(i), field.Name)
+				row = append(row, value)
+				found = true
+				break
+			}
+		}
+		if !found {
+			row = append(row, "")
+		}
+	}
+	return row
+}
+
+func (f *TableFormatter) formatValueWithContext(v reflect.Value, fieldName string) string {
+	// Special formatting for timestamp fields
+	if (fieldName == "StartAt" || fieldName == "EndAt") && v.Kind() == reflect.Int64 {
+		// Convert Unix timestamp (ms) to readable format
+		timestamp := time.Unix(v.Int()/1000, (v.Int()%1000)*1000000)
+		return timestamp.Format("2006-01-02 15:04")
+	}
+
+	return f.formatValue(v)
 }
 
 func (f *TableFormatter) formatValue(v reflect.Value) string {

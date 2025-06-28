@@ -3,6 +3,7 @@ package reserves
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/miscord-dev/epgstationctl/internal/client"
 	"github.com/miscord-dev/epgstationctl/internal/commands/root"
@@ -20,6 +21,9 @@ var (
 	// List flags
 	reserveType string
 	ruleId      int
+	verbose     bool
+	full        bool
+	columns     string
 
 	// Create/Update flags
 	programId    int64
@@ -45,7 +49,17 @@ var reservesCmd = &cobra.Command{
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List reservations",
-	Long:  "List all reservations with optional filtering",
+	Long: `List all reservations with optional filtering.
+
+Column Display Options:
+  Default: Shows essential columns (Id, Name, StartAt, EndAt, ChannelId, IsConflict, IsSkip, IsOverlap)
+  --verbose: Shows additional columns (includes RuleId, ProgramId, Description)
+  --full: Shows all available columns
+  --columns: Custom column selection (e.g., --columns=Id,Name,StartAt,ChannelId)
+
+Available columns: Id, Name, StartAt, EndAt, ChannelId, RuleId, ProgramId, IsConflict, 
+IsSkip, IsOverlap, Description, AllowEndLack, EncodeMode1, EncodeMode2, EncodeMode3, 
+Directory, ParentDirectoryName, Tags, and more.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg := root.GetConfig()
 		client, err := client.NewEPGStationClient(cfg)
@@ -84,7 +98,28 @@ var listCmd = &cobra.Command{
 		case "json":
 			formatter = output.NewJSONFormatter(nil)
 		default:
-			formatter = output.NewTableFormatter(nil, cfg.Output.NoHeader)
+			// Define column sets
+			defaultColumns := []string{"Id", "Name", "StartAt", "EndAt", "ChannelId", "IsConflict", "IsSkip", "IsOverlap"}
+			verboseColumns := []string{"Id", "Name", "StartAt", "EndAt", "ChannelId", "RuleId", "ProgramId", "IsConflict", "IsSkip", "IsOverlap", "Description"}
+
+			var selectedColumns []string
+
+			if columns != "" {
+				// Custom columns specified
+				selectedColumns = strings.Split(strings.ReplaceAll(columns, " ", ""), ",")
+			} else if full {
+				// Full output - use default formatter (all columns)
+				formatter = output.NewTableFormatter(nil, cfg.Output.NoHeader)
+				return formatter.Format(reserves.Reserves)
+			} else if verbose {
+				// Verbose output
+				selectedColumns = verboseColumns
+			} else {
+				// Default minimal output
+				selectedColumns = defaultColumns
+			}
+
+			formatter = output.NewTableFormatterWithColumns(nil, cfg.Output.NoHeader, selectedColumns)
 		}
 
 		return formatter.Format(reserves.Reserves)
@@ -373,10 +408,13 @@ var updateSystemCmd = &cobra.Command{
 func init() {
 	// List command flags
 	listCmd.Flags().IntVar(&offset, "offset", 0, "Offset for pagination")
-	listCmd.Flags().IntVarP(&limit, "limit", "l", 24, "Number of reserves to retrieve")
+	listCmd.Flags().IntVarP(&limit, "limit", "l", 10, "Number of reserves to retrieve")
 	listCmd.Flags().BoolVar(&halfWidth, "half-width", true, "Use half-width characters")
 	listCmd.Flags().StringVar(&reserveType, "type", "", "Filter by reserve type (all, normal, conflict, skip, overlap)")
 	listCmd.Flags().IntVar(&ruleId, "rule-id", 0, "Filter by rule ID")
+	listCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Show more columns (includes RuleId, ProgramId, Description)")
+	listCmd.Flags().BoolVar(&full, "full", false, "Show all available columns")
+	listCmd.Flags().StringVar(&columns, "columns", "", "Comma-separated list of columns to display (e.g., 'Id,Name,StartAt,EndAt')")
 
 	// Show command flags
 	showCmd.Flags().BoolVar(&halfWidth, "half-width", true, "Use half-width characters")

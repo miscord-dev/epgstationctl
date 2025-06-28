@@ -13,13 +13,15 @@ A comprehensive command-line interface for [EPGStation](https://github.com/l3tnu
   - List active recordings with pagination support
   - Monitor recording system status and statistics
 - **Reservation Management**:
-  - List, create, update, and delete reservations
+  - List, create, update, and delete reservations with flexible column display
   - Handle reservation conflicts, skips, and overlaps
   - View reservation status summaries and counts
+  - Customizable output with default, verbose, full, and custom column modes
 - **Encoding Job Management**:
-  - List running and queued encoding jobs with progress
+  - List running and queued encoding jobs with progress and flexible column display
   - Add new manual encoding jobs for recorded content
   - Cancel active or queued encoding jobs
+  - Customizable output with default, verbose, full, and custom column modes
 - **Multiple Output Formats**: 
   - Clean table format for human reading (default)
   - JSON output for scripting and automation
@@ -162,8 +164,17 @@ epgstationctl recordings list --verbose --half-width=true
 #### Reservations
 
 ```bash
-# List all reservations
+# List all reservations (default: essential columns only)
 epgstationctl reserves list
+
+# Show more detailed columns
+epgstationctl reserves list --verbose
+
+# Show all available columns
+epgstationctl reserves list --full
+
+# Custom column selection
+epgstationctl reserves list --columns=Id,Name,StartAt,ChannelId
 
 # Filter reservations by type and rule
 epgstationctl reserves list --type=normal --rule-id=123
@@ -193,8 +204,14 @@ epgstationctl reserves update-system
 #### Encoding Jobs
 
 ```bash
-# List all encoding jobs (running and queued)
+# List all encoding jobs (default: essential columns only)
 epgstationctl encodes list
+
+# Show more detailed columns including logs
+epgstationctl encodes list --verbose
+
+# Custom column selection
+epgstationctl encodes list --columns=ID,Mode,Status,Name
 
 # Add a new encoding job
 epgstationctl encodes add --recorded-id=123 --mode=H.264 --parent-dir=/encoded
