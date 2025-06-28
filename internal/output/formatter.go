@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"time"
 
 	"github.com/olekukonko/tablewriter"
 )
@@ -166,10 +167,61 @@ func (f *TableFormatter) extractRow(v reflect.Value) []string {
 		if !v.Type().Field(i).IsExported() {
 			continue
 		}
-		value := f.formatValue(v.Field(i))
+		fieldName := v.Type().Field(i).Name
+		value := f.formatValueWithContext(v.Field(i), fieldName)
 		row = append(row, value)
 	}
 	return row
+}
+
+func (f *TableFormatter) formatValueWithContext(v reflect.Value, fieldName string) string {
+	// Special formatting for timestamp fields
+	if (fieldName == "StartAt" || fieldName == "EndAt" || fieldName == "startAt" || fieldName == "endAt") && (v.Kind() == reflect.Int64 || v.Kind() == reflect.Int) {
+		// Convert Unix timestamp (ms) to readable format
+		timestamp := time.Unix(v.Int()/1000, (v.Int()%1000)*1000000)
+		return timestamp.Format("01/02 15:04")
+	}
+
+	// Format boolean fields with symbols for better readability
+	if v.Kind() == reflect.Bool {
+		switch fieldName {
+		case "IsConflict", "IsSkip", "IsOverlap", "isConflict", "isSkip", "isOverlap":
+			if v.Bool() {
+				return "✓"
+			}
+			return "-"
+		case "Enable", "Enabled", "enable", "enabled":
+			if v.Bool() {
+				return "✓"
+			}
+			return "✗"
+		default:
+			if v.Bool() {
+				return "Yes"
+			}
+			return "No"
+		}
+	}
+
+	// Shorten large ID numbers for better readability
+	if (v.Kind() == reflect.Int64 || v.Kind() == reflect.Int) && (fieldName == "ChannelId" || fieldName == "ProgramId" || fieldName == "RuleId" || fieldName == "channelId" || fieldName == "programId" || fieldName == "ruleId") {
+		id := v.Int()
+		if id > 100000 {
+			return fmt.Sprintf("...%d", id%100000)
+		}
+		return fmt.Sprintf("%d", id)
+	}
+
+	// Handle very long text fields by truncating them
+	if v.Kind() == reflect.String && fieldName == "Description" {
+		str := v.String()
+		if len(str) > 50 {
+			return str[:47] + "..."
+		}
+		return str
+	}
+
+	return f.formatValue(v)
 }
 
 func (f *TableFormatter) formatValue(v reflect.Value) string {
@@ -193,9 +245,9 @@ func (f *TableFormatter) formatValue(v reflect.Value) string {
 		return fmt.Sprintf("%.2f", v.Float())
 	case reflect.Bool:
 		if v.Bool() {
-			return "true"
+			return "Yes"
 		}
-		return "false"
+		return "No"
 	case reflect.Slice, reflect.Array:
 		if v.Len() == 0 {
 			return ""
