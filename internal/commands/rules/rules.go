@@ -3,6 +3,7 @@ package rules
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/miscord-dev/epgstationctl/internal/client"
 	"github.com/miscord-dev/epgstationctl/internal/commands/root"
@@ -13,6 +14,8 @@ import (
 
 const (
 	outputFormatJSON = "json"
+	channelsAll      = "All"
+	booleanFalse     = "false"
 )
 
 var (
@@ -271,14 +274,14 @@ func formatRulesAsTable(rules client.RulesWithID, formatter output.Formatter) er
 		Channels string
 	}
 
-	var ruleList []RuleInfo
+	ruleList := make([]RuleInfo, 0, len(rules.Rules))
 	for _, rule := range rules.Rules {
-		status := "Disabled"
+		status := "✗"
 		if rule.ReserveOption.Enable {
 			if rule.IsTimeSpecification {
-				status = "Time-based"
+				status = "⏰"
 			} else {
-				status = "Enabled"
+				status = "✓"
 			}
 		}
 
@@ -287,23 +290,20 @@ func formatRulesAsTable(rules client.RulesWithID, formatter output.Formatter) er
 			keyword = *rule.SearchOption.Keyword
 		}
 
-		channels := "All"
+		var channelParts []string
 		if rule.SearchOption.GR != nil && *rule.SearchOption.GR {
-			channels = "GR"
+			channelParts = append(channelParts, "地上波")
 		}
 		if rule.SearchOption.BS != nil && *rule.SearchOption.BS {
-			if channels != "All" {
-				channels += ",BS"
-			} else {
-				channels = "BS"
-			}
+			channelParts = append(channelParts, "BS")
 		}
 		if rule.SearchOption.CS != nil && *rule.SearchOption.CS {
-			if channels != "All" {
-				channels += ",CS"
-			} else {
-				channels = "CS"
-			}
+			channelParts = append(channelParts, "CS")
+		}
+		
+		channels := channelsAll
+		if len(channelParts) > 0 {
+			channels = strings.Join(channelParts, ",")
 		}
 
 		ruleList = append(ruleList, RuleInfo{
@@ -358,19 +358,19 @@ func formatRuleDetailsAsTable(rule client.RuleWithID, formatter output.Formatter
 		details = append(details, RuleDetail{"Channels", fmt.Sprintf("%v", channels)})
 	}
 
-	searchName := "false"
+	searchName := booleanFalse
 	if rule.SearchOption.Name != nil {
 		searchName = fmt.Sprintf("%t", *rule.SearchOption.Name)
 	}
 	details = append(details, RuleDetail{"SearchName", searchName})
 
-	searchDescription := "false"
+	searchDescription := booleanFalse
 	if rule.SearchOption.Description != nil {
 		searchDescription = fmt.Sprintf("%t", *rule.SearchOption.Description)
 	}
 	details = append(details, RuleDetail{"SearchDescription", searchDescription})
 
-	searchExtended := "false"
+	searchExtended := booleanFalse
 	if rule.SearchOption.Extended != nil {
 		searchExtended = fmt.Sprintf("%t", *rule.SearchOption.Extended)
 	}
