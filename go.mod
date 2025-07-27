@@ -4,7 +4,7 @@ go 1.24.2
 
 require (
 	github.com/getkin/kin-openapi v0.132.0
-	github.com/oapi-codegen/runtime v1.1.1
+	github.com/oapi-codegen/runtime v1.1.2
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.9.1
 )
